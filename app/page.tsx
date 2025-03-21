@@ -7,9 +7,9 @@ import AppSidebar from "@/components/app-sidebar"
 export default function Home() {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-slate-50">
+      <div className="flex h-screen w-full bg-slate-50">
         <AppSidebar />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto transition-all duration-200 ease-linear">
           <Suspense fallback={<DashboardSkeleton />}>
             <Dashboard />
           </Suspense>

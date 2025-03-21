@@ -48,35 +48,12 @@ export default function AppSidebar() {
         <div className="flex items-center p-2">
           <div className="flex items-center gap-2 text-xl font-bold text-primary">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              PM
+              P
             </div>
-            <span>ParoleManager</span>
+            <span>Parolic</span>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto">
             <SidebarTrigger />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
-                    3
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <span className="font-medium">Missed Check-in:</span> John D. (Case #4582)
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span className="font-medium">Location Alert:</span> Maria R. (Case #3291)
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span className="font-medium">Upcoming Hearing:</span> Tomorrow, 9:00 AM
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
       </SidebarHeader>

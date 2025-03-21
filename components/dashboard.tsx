@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Users, Calendar, AlertTriangle, CheckCircle, Clock, MapPin, ArrowUpRight, Filter, Search } from "lucide-react"
+import { Users, Calendar, AlertTriangle, CheckCircle, Clock, MapPin, ArrowUpRight, Filter, Search, FileText } from "lucide-react"
+import { useSidebar } from "@/components/ui/sidebar"
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -22,11 +23,49 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
+type ActivityType = "case_update" | "appointment" | "alert" | "compliance"
+type AppointmentType = "initial" | "follow_up" | "review" | "emergency"
+
+interface Activity {
+  type: ActivityType
+  title: string
+  description: string
+  time: string
+  case?: string
+}
+
+interface Appointment {
+  clientName: string
+  caseNumber: string
+  date: string
+  time: string
+  type: AppointmentType
+  location?: string
+}
+
+interface Client {
+  name: string
+  caseNumber: string
+}
+
+interface ChartData {
+  date: string
+  value: number
+}
+
+interface ChartTooltipProps {
+  active?: boolean
+  payload?: Array<{
+    value: number
+  }>
+}
+
 export default function Dashboard() {
   const [selectedTab, setSelectedTab] = useState("overview")
+  const { state } = useSidebar()
 
   return (
-    <div className="p-6 space-y-6">
+    <div className={`p-6 space-y-6 transition-all duration-200 ease-linear ${state === "collapsed" ? "pl-8" : ""}`}>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Officer Dashboard</h1>
@@ -331,37 +370,61 @@ export default function Dashboard() {
 }
 
 function ComplianceChart() {
-  const data = [
-    { date: "2023-03-01", checkIns: 38, appointments: 32, violations: 4 },
-    { date: "2023-03-05", checkIns: 40, appointments: 35, violations: 3 },
-    { date: "2023-03-10", checkIns: 37, appointments: 30, violations: 5 },
-    { date: "2023-03-15", checkIns: 42, appointments: 36, violations: 2 },
-    { date: "2023-03-20", checkIns: 41, appointments: 38, violations: 3 },
-    { date: "2023-03-25", checkIns: 39, appointments: 34, violations: 4 },
-    { date: "2023-03-30", checkIns: 43, appointments: 39, violations: 1 },
+  const data: ChartData[] = [
+    { date: "Jan 1", value: 95 },
+    { date: "Jan 2", value: 92 },
+    { date: "Jan 3", value: 88 },
+    { date: "Jan 4", value: 85 },
+    { date: "Jan 5", value: 82 },
+    { date: "Jan 6", value: 80 },
+    { date: "Jan 7", value: 78 },
+    { date: "Jan 8", value: 75 },
+    { date: "Jan 9", value: 72 },
+    { date: "Jan 10", value: 70 },
+    { date: "Jan 11", value: 68 },
+    { date: "Jan 12", value: 65 },
+    { date: "Jan 13", value: 63 },
+    { date: "Jan 14", value: 60 },
+    { date: "Jan 15", value: 58 },
+    { date: "Jan 16", value: 55 },
+    { date: "Jan 17", value: 53 },
+    { date: "Jan 18", value: 50 },
+    { date: "Jan 19", value: 48 },
+    { date: "Jan 20", value: 45 },
+    { date: "Jan 21", value: 43 },
+    { date: "Jan 22", value: 40 },
+    { date: "Jan 23", value: 38 },
+    { date: "Jan 24", value: 35 },
+    { date: "Jan 25", value: 33 },
+    { date: "Jan 26", value: 30 },
+    { date: "Jan 27", value: 28 },
+    { date: "Jan 28", value: 25 },
+    { date: "Jan 29", value: 23 },
+    { date: "Jan 30", value: 20 },
   ]
 
   return (
     <ChartContainer
-      className="h-full w-full"
       data={data}
       xAxis={[
         {
           scaleType: "point",
           dataKey: "date",
-          tickFormatter: (date) => new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          tickFormatter: (date) => date,
         },
       ]}
       yAxis={[
         {
           scaleType: "linear",
-          dataKey: "checkIns",
+          dataKey: "value",
           min: 0,
-          max: 50,
+          max: 100,
           tickCount: 6,
         },
       ]}
     >
+      <ChartArea dataKey="value" fill="hsl(var(--primary) / 0.1)" />
+      <ChartLine dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={true} />
       <ChartAxisOptions
         x={{
           label: "Date",
@@ -378,7 +441,7 @@ function ComplianceChart() {
           },
         }}
         y={{
-          label: "Count",
+          label: "Compliance Rate (%)",
           labelStyle: {
             fontSize: 12,
             fill: "hsl(var(--muted-foreground))",
@@ -392,44 +455,20 @@ function ComplianceChart() {
           },
         }}
       />
-      <ChartLine dataKey="checkIns" stroke="hsl(var(--primary))" strokeWidth={2} dot={true} />
-      <ChartLine dataKey="appointments" stroke="hsl(var(--blue-500))" strokeWidth={2} dot={true} />
-      <ChartLine dataKey="violations" stroke="hsl(var(--destructive))" strokeWidth={2} dot={true} />
-      <ChartArea dataKey="violations" fill="hsl(var(--destructive) / 0.1)" />
-      <ChartTooltip
-        content={({ active, payload }) => {
-          if (active && payload && payload.length) {
-            return (
-              <ChartTooltipContent
-                className="border bg-background p-2 shadow-sm"
-                items={[
-                  {
-                    label: "Check-ins",
-                    value: payload[0].value,
-                    color: "hsl(var(--primary))",
-                  },
-                  {
-                    label: "Appointments",
-                    value: payload[1].value,
-                    color: "hsl(var(--blue-500))",
-                  },
-                  {
-                    label: "Violations",
-                    value: payload[2].value,
-                    color: "hsl(var(--destructive))",
-                  },
-                ]}
-              />
-            )
-          }
-          return null
-        }}
-      />
+      <ChartTooltip>
+        <ChartTooltipContent
+          items={[
+            {
+              label: "Compliance Rate",
+              value: (payload: ChartTooltipProps["payload"]) => `${payload?.[0]?.value ?? 0}%`,
+              color: "hsl(var(--primary))",
+            },
+          ]}
+        />
+      </ChartTooltip>
       <ChartLegend
         items={[
-          { label: "Check-ins", color: "hsl(var(--primary))" },
-          { label: "Appointments", color: "hsl(var(--blue-500))" },
-          { label: "Violations", color: "hsl(var(--destructive))" },
+          { label: "Compliance Rate", color: "hsl(var(--primary))" },
         ]}
       />
     </ChartContainer>
@@ -437,161 +476,133 @@ function ComplianceChart() {
 }
 
 // Helper functions
-function getInitials(name) {
+function getInitials(name: string): string {
   return name
     .split(" ")
     .map((n) => n[0])
     .join("")
+    .toUpperCase()
+    .slice(0, 2)
 }
 
-function getActivityIcon(type) {
+function getActivityIcon(type: ActivityType) {
   switch (type) {
-    case "check-in":
-      return <CheckCircle className="h-4 w-4" />
+    case "case_update":
+      return <FileText className="h-4 w-4" />
     case "appointment":
       return <Calendar className="h-4 w-4" />
-    case "violation":
+    case "alert":
       return <AlertTriangle className="h-4 w-4" />
-    case "location":
-      return <MapPin className="h-4 w-4" />
-    default:
-      return <Clock className="h-4 w-4" />
+    case "compliance":
+      return <CheckCircle className="h-4 w-4" />
   }
 }
 
-function getActivityIconColor(type) {
+function getActivityIconColor(type: ActivityType): string {
   switch (type) {
-    case "check-in":
-      return "bg-green-100 text-green-600"
-    case "appointment":
+    case "case_update":
       return "bg-blue-100 text-blue-600"
-    case "violation":
+    case "appointment":
+      return "bg-green-100 text-green-600"
+    case "alert":
       return "bg-red-100 text-red-600"
-    case "location":
+    case "compliance":
       return "bg-yellow-100 text-yellow-600"
-    default:
-      return "bg-gray-100 text-gray-600"
   }
 }
 
-function getAppointmentBadgeVariant(type) {
+function getAppointmentBadgeVariant(type: AppointmentType): "default" | "secondary" | "destructive" | "outline" {
   switch (type) {
-    case "Check-in":
+    case "initial":
       return "default"
-    case "Treatment":
+    case "follow_up":
       return "secondary"
-    case "Court":
+    case "review":
       return "outline"
-    default:
-      return "default"
+    case "emergency":
+      return "destructive"
   }
 }
 
 // Sample data
-const recentActivities = [
+const recentActivities: Activity[] = [
   {
-    type: "check-in",
+    type: "case_update",
     title: "Successful Check-in",
     description: "James Wilson completed his scheduled check-in",
-    time: "Today, 10:23 AM",
-    case: "3421",
-  },
-  {
-    type: "appointment",
-    title: "Appointment Completed",
-    description: "Sarah Johnson attended her substance abuse counseling",
-    time: "Today, 9:15 AM",
-    case: "2876",
-  },
-  {
-    type: "violation",
-    title: "Curfew Violation",
-    description: "Michael Davis was outside permitted area after curfew",
-    time: "Yesterday, 11:42 PM",
+    time: "2 hours ago",
     case: "4582",
   },
   {
-    type: "location",
-    title: "Location Alert",
-    description: "Maria Rodriguez entered restricted zone",
-    time: "Yesterday, 3:30 PM",
+    type: "alert",
+    title: "Curfew Violation",
+    description: "Michael Davis was outside permitted area after curfew",
+    time: "4 hours ago",
     case: "3291",
   },
   {
-    type: "appointment",
-    title: "Appointment Scheduled",
-    description: "Robert Thompson scheduled for employment counseling",
-    time: "Yesterday, 2:15 PM",
-    case: "5103",
+    type: "compliance",
+    title: "Location Alert",
+    description: "Maria Rodriguez entered restricted zone",
+    time: "5 hours ago",
+    case: "4123",
   },
 ]
 
-const highRiskCases = [
+const highRiskCases: Client[] = [
   {
-    name: "John Doe",
-    caseNumber: "4582",
-    riskLevel: "High",
-    lastContact: "2 days ago",
-  },
-  {
-    name: "Maria Rodriguez",
+    name: "Michael Davis",
     caseNumber: "3291",
-    riskLevel: "High",
-    lastContact: "1 day ago",
   },
   {
-    name: "David Williams",
-    caseNumber: "5104",
-    riskLevel: "High",
-    lastContact: "3 days ago",
+    name: "Emily Brown",
+    caseNumber: "5678",
   },
   {
-    name: "Lisa Johnson",
-    caseNumber: "2987",
-    riskLevel: "High",
-    lastContact: "Today",
+    name: "David Lee",
+    caseNumber: "9012",
   },
 ]
 
-const upcomingAppointments = [
-  {
-    clientName: "James Wilson",
-    caseNumber: "3421",
-    date: "Today",
-    time: "2:00 PM",
-    type: "Check-in",
-    location: "Office",
-  },
+const upcomingAppointments: Appointment[] = [
   {
     clientName: "Sarah Johnson",
-    caseNumber: "2876",
+    caseNumber: "4582",
     date: "Today",
-    time: "3:30 PM",
-    type: "Treatment",
-    location: "Community Center",
-  },
-  {
-    clientName: "Robert Thompson",
-    caseNumber: "5103",
-    date: "Tomorrow",
-    time: "10:00 AM",
-    type: "Employment",
-    location: "Job Center",
+    time: "2:00 PM",
+    type: "initial",
+    location: "Office",
   },
   {
     clientName: "Michael Davis",
-    caseNumber: "4582",
+    caseNumber: "3291",
+    date: "Today",
+    time: "3:30 PM",
+    type: "follow_up",
+    location: "Community Center",
+  },
+  {
+    clientName: "James Wilson",
+    caseNumber: "4123",
+    date: "Tomorrow",
+    time: "10:00 AM",
+    type: "review",
+    location: "Job Center",
+  },
+  {
+    clientName: "Emily Brown",
+    caseNumber: "5678",
     date: "Tomorrow",
     time: "1:15 PM",
-    type: "Check-in",
+    type: "emergency",
     location: "Office",
   },
   {
-    clientName: "Lisa Johnson",
-    caseNumber: "2987",
+    clientName: "David Lee",
+    caseNumber: "9012",
     date: "Mar 22, 2023",
     time: "9:30 AM",
-    type: "Court",
+    type: "review",
     location: "County Courthouse",
   },
 ]
